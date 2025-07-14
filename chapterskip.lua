@@ -12,6 +12,7 @@ local categories = {
 local options = {
     enabled = true,
     skip_once = true,
+    osd_message = true,
     categories = "",
     skip = "",
     pause = ""
@@ -63,9 +64,12 @@ function chapterskip(_, current)
     for i, chapter in ipairs(chapters) do
         if (not options.skip_once or not paused[i]) and matches(i, chapter.title, "pause") then
             if i == current + 1 then
+                if options.osd_message then
+                    local current_chapter = chapters[current + 1]
+                    mp.osd_message("Pausing at chapter: " .. (current_chapter and current_chapter.title or "Chapter " .. (current + 1)), 3)
+                end
                 mp.set_property("pause", "yes")
                 paused[i] = true
-                mp.osd_message("Paused at chapter: " .. (chapter.title or "Chapter " .. i), 3)
                 return
             end
         end
@@ -77,6 +81,10 @@ function chapterskip(_, current)
                 skip = i
             end
         elseif skip then
+            if options.osd_message then
+                local skip_chapter = chapters[skip]
+                mp.osd_message("Skipping chapter: " .. (skip_chapter and skip_chapter.title or "Chapter " .. skip), 3)
+            end
             mp.set_property("time-pos", chapter.time)
             skipped[skip] = true
             return
