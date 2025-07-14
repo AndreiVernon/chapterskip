@@ -1,5 +1,5 @@
-# chapterskip
-Automatically skips chapters based on title.
+# chapterskip (pause edition)
+Automatically skips **or pauses** chapters based on title.
 
 ## Installation
 Place chapterskip.lua in your mpv `scripts` folder.
