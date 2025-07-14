@@ -17,6 +17,8 @@ The default categories are:
 
 Additional categories can be defined with `categories=my-new-category>Part [AB]/Ending 1; another-category>Part C` in `script-opts/chapterskip.conf`
 
+You can disable the on screen display messages by setting `osd_message=no`. 
+
 ## Category syntax
 List of `category name>slash-separated lua patterns`, separated by semicolons.  
 A `+` can also be used instead of `>`.
