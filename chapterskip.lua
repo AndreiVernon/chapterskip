@@ -2,26 +2,25 @@
 --
 -- Ain't Nobody Got Time for That
 --
--- This script skips chapters based on their title.
-
+-- This script skips or pauses chapters based on their title.
 local categories = {
     prologue = "^Prologue/^Intro",
     opening = "^OP/ OP$/^Opening",
     ending = "^ED/ ED$/^Ending",
     preview = "Preview$"
 }
-
 local options = {
     enabled = true,
     skip_once = true,
     categories = "",
-    skip = ""
+    skip = "",
+    pause = ""
 }
-
 mp.options = require "mp.options"
 
-function matches(i, title)
-    for category in string.gmatch(options.skip, " *([^;]*[^; ]) *") do
+function matches(i, title, action_type)
+    local target_option = action_type == "pause" and options.pause or options.skip
+    for category in string.gmatch(target_option, " *([^;]*[^; ]) *") do
         if categories[category:lower()] then
             if string.find(category:lower(), "^idx%-") == nil then
                 if title then
@@ -40,9 +39,11 @@ function matches(i, title)
             end
         end
     end
+    return false
 end
 
 local skipped = {}
+local paused = {}
 local parsed = {}
 
 function chapterskip(_, current)
@@ -60,7 +61,15 @@ function chapterskip(_, current)
     local chapters = mp.get_property_native("chapter-list")
     local skip = false
     for i, chapter in ipairs(chapters) do
-        if (not options.skip_once or not skipped[i]) and matches(i, chapter.title) then
+        if (not options.skip_once or not paused[i]) and matches(i, chapter.title, "pause") then
+            if i == current + 1 then
+                mp.set_property("pause", "yes")
+                paused[i] = true
+                mp.osd_message("Paused at chapter: " .. (chapter.title or "Chapter " .. i), 3)
+                return
+            end
+        end
+        if (not options.skip_once or not skipped[i]) and matches(i, chapter.title, "skip") then
             if i == current + 1 or skip == i - 1 then
                 if skip then
                     skipped[skip] = true
@@ -82,4 +91,7 @@ function chapterskip(_, current)
 end
 
 mp.observe_property("chapter", "number", chapterskip)
-mp.register_event("file-loaded", function() skipped = {} end)
+mp.register_event("file-loaded", function() 
+    skipped = {} 
+    paused = {}
+end)
